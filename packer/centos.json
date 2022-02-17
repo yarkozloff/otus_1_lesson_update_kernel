@@ -1,0 +1,78 @@
+{
+  "variables": {
+    "artifact_description": "CentOS 7.6 with kernel 5.x",
+    "artifact_version": "7.6.1810",
+    "image_name": "centos-7.6"
+  },
+
+  "builders": [
+    {
+      "name": "{{user `image_name`}}",
+      "type": "virtualbox-iso",
+      "vm_name": "packer-centos-vm",
+
+      "boot_wait": "10s",
+      "disk_size": "6000",
+      "guest_os_type": "RedHat_64",
+      "http_directory": "http",
+
+      "iso_url": "http://mirrors.powernet.com.ru/centos/7.6.1810/isos/x86_64/CentOS-7-x86_64-Minimal-1810.iso",
+      "iso_checksum": "38d5d51d9d100fd73df031ffd6bd8b1297ce24660dc8c13a3b8b4534a4bd291c",
+      "iso_checksum_type": "sha256",
+      "boot_command": [
+        "<tab> text ks=http://{{ .HTTPIP }}:{{ .HTTPPort }}/vagrant.ks<enter><wait>"
+      ],
+
+      "shutdown_command": "sudo -S /sbin/halt -h -p",
+      "shutdown_timeout" : "10m",
+      "ssh_wait_timeout": "20m",
+      "ssh_username": "vagrant",
+      "ssh_password": "vagrant",
+      "ssh_port": 22,
+      "ssh_pty": true,
+      "headless": "true",
+
+      "output_directory": "builds",
+
+      "vboxmanage": [
+        [  "modifyvm",  "{{.Name}}",  "--memory",  "512" ],
+        [  "modifyvm",  "{{.Name}}",  "--cpus",  "1" ]
+      ],
+
+      "export_opts":
+      [
+        "--manifest",
+        "--vsys", "0",
+        "--description", "{{user `artifact_description`}}",
+        "--version", "{{user `artifact_version`}}"
+      ]
+
+    }
+  ],
+
+  "post-processors": [
+    {
+      "output": "centos-{{user `artifact_version`}}-kernel-5-x86_64-Minimal.box",
+      "compression_level": "7",
+      "type": "vagrant"
+    }
+  ],
+  "provisioners": [
+    {
+      "type": "shell",
+      "execute_command": "{{.Vars}} sudo -S -E bash '{{.Path}}'",
+      "start_retry_timeout": "1m",
+      "expect_disconnect": true,
+      "pause_before": "20s",
+      "override": {
+        "{{user `image_name`}}" : {
+          "scripts" :
+            [
+              "scripts/stage-1-kernel-update.sh",
+              "scripts/stage-2-clean.sh"
+            ]
+        }
+      }
+    }
+  ]
+}
