@@ -79,4 +79,4 @@ Builds finished. Создался box в текущем каталоге
 ~~~
 vagrant halt
 ~~~
-Изменил в Vagrantfile box_name на yarkozloff/centos-7-6. Выполнил vagrant up для проверка. Поднялась машина с нужной версией ядра
+Изменил в Vagrantfile box_name на yarkozloff/centos-7-6. Выполнил vagrant up для проверки. Поднялась машина с нужной версией ядра 5.16.9-1.el7.elrepo.x86_64
